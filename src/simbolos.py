@@ -13,6 +13,7 @@ Unidad de dibujo: 1 u = lado de un cuadro de válvula.
 import matplotlib
 
 matplotlib.use("Agg")
+matplotlib.rcParams["svg.hashsalt"] = "rgim-neumatica"
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Arc, Circle, Polygon, Rectangle  # noqa: E402
 
@@ -22,8 +23,8 @@ ACCENT = "#c0392b"     # resaltados (p.ej. señal bloqueada)
 GROUP = ["#0b7a53", "#b5651d", "#6a3d9a"]  # colores de líneas de grupo (cascada)
 LW = 1.5
 SCALE = 0.42  # pulgadas por unidad
-PORT_FS = 6.5
-LABEL_FS = 9
+PORT_FS = 7
+LABEL_FS = 10.5
 
 
 class Diagram:
@@ -362,5 +363,5 @@ class Diagram:
 
     def save(self, path_noext):
         self.fig.savefig(path_noext + ".png", dpi=220, transparent=False, facecolor="white")
-        self.fig.savefig(path_noext + ".svg", facecolor="white")
+        self.fig.savefig(path_noext + ".svg", facecolor="white", metadata={"Date": None})
         plt.close(self.fig)

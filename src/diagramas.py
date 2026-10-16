@@ -8,6 +8,7 @@ import os
 import matplotlib
 
 matplotlib.use("Agg")
+matplotlib.rcParams["svg.hashsalt"] = "rgim-neumatica"
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.patches import Rectangle  # noqa: E402
 
@@ -103,7 +104,7 @@ def phase(name, cyls, steps, signals=None, groups=None, sensors=None, conflicts=
         ax.text(n / 2, rows * (rh + gap) + top_extra - 0.75, title, ha="center", fontsize=11,
                 weight="bold", color=NAVY)
     fig.savefig(os.path.join(OUT, name + ".png"), dpi=220, facecolor="white")
-    fig.savefig(os.path.join(OUT, name + ".svg"), facecolor="white")
+    fig.savefig(os.path.join(OUT, name + ".svg"), facecolor="white", metadata={"Date": None})
     plt.close(fig)
 
 
