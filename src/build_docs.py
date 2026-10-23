@@ -5,9 +5,10 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from docx.enum.text import WD_ALIGN_PARAGRAPH  # noqa: E402
+from catalogo import CATALOGO, ORDEN  # noqa: E402
 from docx_utils import (GREEN, MUTED, NAVY, RED, ROOT, answer_box, bullets, callout,  # noqa: E402
-                        figure, landscape, new_doc, numbered, page_break, para, portrait,
-                        table)
+                        figure, image_table, landscape, new_doc, numbered, page_break, para,
+                        portrait, table)
 
 D_ALUM = os.path.join(ROOT, "sesion2_practica")
 D_DOC = os.path.join(ROOT, "docente")
@@ -90,6 +91,43 @@ PREGUNTAS = {
 
 
 # =====================================================================
+# Símbolos
+# =====================================================================
+def catalogo_simbolos(doc, numero="", claves=None, titulo="Catálogo de símbolos"):
+    """Tabla con imagen, nombre/designación, cómo reconocerlo y función."""
+    doc.add_heading(numero + titulo, 1)
+    para(doc, "Cómo leer una válvula: cada cuadro es una posición; se cuentan los PUERTOS (vías) de "
+              "un cuadro y los CUADROS (posiciones) → «3/2» = 3 vías, 2 posiciones. Los puertos se "
+              "dibujan solo en el cuadro de reposo. El accionamiento dibujado a un lado lleva la "
+              "válvula al cuadro de ese lado. Numeración: 1 presión, 2 y 4 salidas, 3 y 5 escapes, "
+              "12 y 14 pilotajes (14 conecta 1 → 4).")
+    rows = []
+    for k in claves or ORDEN:
+        c = CATALOGO[k]
+        rows.append([c["img"],
+                     [(c["nombre"], {"bold": True, "color": NAVY}), ("\n" + c["designacion"], {})],
+                     c["reconocer"], c["funcion"]])
+    image_table(doc, ["Símbolo", "Nombre y designación", "Cómo reconocerlo", "Para qué sirve"],
+                rows, [3.4, 4.0, 5.6, 4.0], img_w_cm=3.1)
+    para(doc, [("Los tres últimos (simple efecto, 5/2 monoestable y rodillo escamoteable) se ven en "
+                "teoría pero no son necesarios para resolver las PD 10 y 11.",
+                {"italic": True, "color": MUTED})], size=9)
+
+
+def simbolos_ejercicio(doc, simb, land=False):
+    """Tabla por ejercicio: símbolo, nombre, cantidad, referencias en el esquema, función."""
+    rows = []
+    for k, n, ref, rol in simb:
+        c = CATALOGO[k]
+        rows.append([c["img"], [(c["nombre"], {"bold": True, "color": NAVY}),
+                                ("\n" + c["designacion"], {})],
+                     str(n), ref, rol])
+    w = [3.0, 6.2, 1.2, 2.8, 5.2] if not land else [3.2, 8.5, 1.4, 4.2, 8.6]
+    image_table(doc, ["Símbolo", "Nombre y designación", "Cant.", "Ref. en el esquema",
+                      "Función en este circuito"], rows, w, img_w_cm=2.7)
+
+
+# =====================================================================
 # 1. Guía del alumno
 # =====================================================================
 def guia():
@@ -111,6 +149,7 @@ def guia():
                 ["2, 4", "Utilización (salidas)", "14", "Pilotaje que conecta 1 → 4"],
                 ["3, 5", "Escape", "X/Y", "N.º de vías / N.º de posiciones"]],
           [1.6, 5.0, 1.6, 5.8])
+    catalogo_simbolos(doc, titulo="Símbolos que usarás")
     doc.add_heading("Reglas de dibujo", 3)
     numbered(doc, ["Por niveles: actuadores arriba, válvulas de potencia al medio, señales abajo.",
                    "Todo en reposo: cilindros retraídos; los finales de carrera pisados en reposo "
@@ -199,10 +238,13 @@ SOL = [
                    "S1 (3/2 NC, pulsador) → VA 14: A+. Rodillo a1 (3/2 NC) → VA 12: A−.",
                    "Baja velocidad en ambos sentidos: R1 y R2 meter-out (antirretorno con paso libre "
                    "hacia el cilindro)."],
-         comp=[["A", "Cilindro de doble efecto"], ["VA", "Válvula 4/2, piloto / piloto"],
-               ["S1", "Válvula 3/2 NC, pulsador / resorte"], ["a1", "Válvula 3/2 NC, rodillo / resorte"],
-               ["R1, R2", "Reguladoras de caudal unidireccionales"],
-               ["0Z", "Fuente + unidad de mantenimiento"]],
+         simb=[("cil_de", 1, "A", "Mueve la cuchara"),
+               ("v42_bi", 1, "VA", "Potencia con memoria (pulso/pulso)"),
+               ("v32_boton", 1, "S1", "Orden de inicio (A+) desde el puesto del operador"),
+               ("v32_rodillo", 1, "a1", "Detecta el final de carrera y ordena A−"),
+               ("reguladora", 2, "R1, R2", "Baja velocidad en ambos sentidos (meter-out)"),
+               ("fuente", 3, "—", "Alimentación de VA, S1 y a1"),
+               ("escape", 2, "—", "Escapes 3 de las válvulas de señal")],
          con=[["VA:4", "R1 → A (cámara posterior)"], ["VA:2", "R2 → A (lado vástago)"],
               ["S1:2", "VA:14"], ["a1:2", "VA:12"], ["VA:1, S1:1, a1:1", "Alimentación"],
               ["Marca a1", "Final de carrera de A (carrera máxima)"]],
@@ -220,9 +262,14 @@ SOL = [
                    "VA 5/2 biestable = memoria: la puerta queda abierta al soltar el botón.",
                    "Cierre lento: R1 en la cámara posterior (es la cámara que se vacía al cerrar), "
                    "antirretorno con paso libre hacia el cilindro."],
-         comp=[["A", "Cilindro de doble efecto"], ["VA", "Válvula 5/2, piloto / piloto"],
-               ["S1, S2", "Válvulas 3/2 NC, pulsador / resorte"], ["O", "Válvula selectora"],
-               ["a0, a1", "Válvulas 3/2 NC, rodillo / resorte"], ["R1", "Reguladora unidireccional"]],
+         simb=[("cil_de", 1, "A", "Mueve la puerta (A+ abre, A− cierra)"),
+               ("v52_bi", 1, "VA", "Potencia con memoria: la puerta queda abierta o cerrada"),
+               ("v32_boton", 2, "S1, S2", "Botón interior y exterior"),
+               ("or", 1, "O", "Cualquiera de los dos botones da la orden"),
+               ("v32_rodillo_acc", 1, "a0", "Puerta cerrada: dirige la orden a 14 (abrir)"),
+               ("v32_rodillo", 1, "a1", "Puerta abierta: dirige la orden a 12 (cerrar)"),
+               ("reguladora", 1, "R1", "Limita solo la velocidad de cierre"),
+               ("fuente", 3, "—", "Alimentación de VA, S1 y S2")],
          con=[["VA:4", "R1 → A (cámara posterior)"], ["VA:2", "A (lado vástago)"],
               ["S1:2, S2:2", "Entradas 1 de la selectora O"], ["O:2", "a0:1 y a1:1"],
               ["a0:2", "VA:14 (abrir)"], ["a1:2", "VA:12 (cerrar)"]],
@@ -239,10 +286,14 @@ SOL = [
                    "Reposo: línea II con aire (salida 2 de VG).",
                    "Arranque: línea II → a0 → b0 → c0 → S → VG 14 (solo si el ciclo terminó).",
                    "Lento: reguladoras meter-out en el lado vástago de A, B y C."],
-         comp=[["A, B, C", "Cilindros de doble efecto"], ["VA, VB, VC", "Válvulas 5/2 piloto/piloto"],
-               ["VG", "Válvula 5/2 piloto/piloto (selectora de grupo)"],
-               ["a0, b0, c0, a1, b1, c1", "Válvulas 3/2 NC rodillo/resorte"],
-               ["S", "Válvula 3/2 NC pulsador/resorte"], ["RA2, RB2, RC2", "Reguladoras unidireccionales"]],
+         simb=[("cil_de", 3, "A, B, C", "Sujeción, primer y segundo doblado"),
+               ("v52_bi", 4, "VA, VB, VC, VG", "Potencia de cada cilindro + selectora de grupo VG"),
+               ("v32_boton", 1, "S", "Pulsador de inicio (alejado)"),
+               ("v32_rodillo_acc", 3, "a0, b0, c0", "En serie con S: solo arranca si el ciclo terminó"),
+               ("v32_rodillo", 3, "a1, b1, c1", "Disparan B+, C+ y el cambio al grupo II"),
+               ("reguladora", 3, "RA2, RB2, RC2", "Sujeción y doblado lentos (meter-out)"),
+               ("lineas", 2, "Línea I, II", "Líneas de grupo de la cascada"),
+               ("fuente", 4, "—", "Alimentación de VA, VB, VC y VG")],
          con=[["VX:4 / VX:2", "Cámara posterior / reguladora → lado vástago (X = A, B, C)"],
               ["VG:4", "Línea I"], ["VG:2", "Línea II (activa en reposo)"],
               ["Línea II", "VA:12, VB:12, VC:12 y a0:1"],
@@ -261,10 +312,16 @@ SOL = [
                    "Cambio I → II: a1 · b1 en serie → VG 12. En II: A− directo; a0 → B−.",
                    "Salida lenta: meter-out en el lado vástago. Retorno rápido: sin estrangulación "
                    "(opcional: válvula de escape rápido en la cámara posterior)."],
-         comp=[["A, B", "Cilindros de doble efecto"], ["VA, VB, VG", "Válvulas 5/2 piloto/piloto"],
-               ["P", "Válvula 3/2 NC pedal/resorte"], ["S", "Válvula 3/2 NC pulsador/resorte"],
-               ["O", "Válvula selectora"], ["a0, a1, b0, b1", "Válvulas 3/2 NC rodillo/resorte"],
-               ["RA2, RB2", "Reguladoras unidireccionales"]],
+         simb=[("cil_de", 2, "A, B", "Plataforma 3 (A) y plataforma 4 (B)"),
+               ("v52_bi", 3, "VA, VB, VG", "Potencia de cada plataforma + selectora de grupo"),
+               ("v32_pedal", 1, "P", "Mando con el pie"),
+               ("v32_boton", 1, "S", "Mando con la mano"),
+               ("or", 1, "O", "Pedal O pulsador"),
+               ("v32_rodillo_acc", 2, "a0, b0", "b0: condición de inicio; a0: ordena B−"),
+               ("v32_rodillo", 2, "a1, b1", "En serie: ambas plataformas llegaron → grupo II"),
+               ("reguladora", 2, "RA2, RB2", "Salida lenta; el retorno queda libre (rápido)"),
+               ("lineas", 2, "Línea I, II", "Líneas de grupo de la cascada"),
+               ("fuente", 3, "—", "Alimentación de VA, VB y VG")],
          con=[["VG:4 / VG:2", "Línea I / Línea II (activa en reposo)"],
               ["Línea II", "P:1, S:1, VA:12, a0:1"], ["P:2, S:2", "Entradas de O"],
               ["O:2 → b0:1 ; b0:2", "VG:14"], ["Línea I", "VA:14, VB:14, a1:1"],
@@ -281,11 +338,14 @@ SOL = [
                    "c1 → VG 12 (vuelve a I, C−).",
                    "Selectores D, E, F: circuitos independientes con 5/2 pulsador/resorte (sale "
                    "mientras se pulsa)."],
-         comp=[["A, B, C, D, E, F", "Cilindros de doble efecto"],
-               ["VA, VB, VC, VG", "Válvulas 5/2 piloto/piloto"],
-               ["SD, SE, SF", "Válvulas 5/2 pulsador/resorte"],
-               ["a0, a1, b0, b1, c0, c1", "Válvulas 3/2 NC rodillo/resorte"],
-               ["S", "Válvula 3/2 NC pulsador/resorte («Iniciar estampado»)"]],
+         simb=[("cil_de", 6, "A, B, C, D, E, F", "Fijación, estampado, entrega y 3 selectores"),
+               ("v52_bi", 4, "VA, VB, VC, VG", "Potencia de A, B, C + selectora de grupo"),
+               ("v52_boton", 3, "SD, SE, SF", "Selectores: salen mientras se pulsa"),
+               ("v32_boton", 1, "S", "«Iniciar estampado»"),
+               ("v32_rodillo_acc", 3, "a0, b0, c0", "c0: condición de inicio; a0 · b0: ordenan C+"),
+               ("v32_rodillo", 3, "a1, b1, c1", "Disparan B+, el paso a II y el regreso a I"),
+               ("lineas", 2, "Línea I, II", "Líneas de grupo de la cascada"),
+               ("fuente", 7, "—", "Alimentación de VA, VB, VC, VG, SD, SE y SF")],
          con=[["VG:2 / VG:4", "Línea I (activa en reposo) / Línea II"],
               ["Línea I", "VC:12, c0:1, a1:1, b1:1"], ["c0:2 → S:1 ; S:2", "VA:14"],
               ["a1:2", "VB:14"], ["b1:2", "VG:14"], ["Línea II", "VA:12, VB:12, a0:1, c1:1"],
@@ -301,13 +361,17 @@ SOL = [
 def solucionario():
     doc = new_doc("Solucionario docente", "Prácticas dirigidas 10 y 11 · Representación neumática",
                   kicker="REPRESENTACIÓN GRÁFICA PARA INGENIERÍA MECATRÓNICA · USO DOCENTE")
-    para(doc, "Cada solución incluye el análisis, el diagrama espacio-fase, el esquema en posición de "
-              "reposo, la lista de componentes y la lista de conexiones para armarlo en FluidSim. "
-              "Las figuras están en la carpeta figuras/ en PNG y SVG.")
+    para(doc, "La sección 0 es el catálogo de los símbolos que aparecen en las soluciones: nombre, "
+              "designación, cómo reconocerlos y para qué sirven. Luego, cada solución incluye el "
+              "esquema en posición de reposo, el diagrama espacio-fase, el análisis, la tabla de "
+              "símbolos que necesita (con cantidades y referencias) y la lista de conexiones para "
+              "armarlo en el simulador. Las figuras están en la carpeta figuras/ en PNG y SVG.")
     callout(doc, "Convenciones:", "VX:n = puerto n de la válvula VX; a0/a1 = finales de carrera "
                                   "(válvulas 3/2 NC de rodillo); línea I/II = líneas de grupo de la "
                                   "cascada; líneas discontinuas = pilotaje.")
-    first = True
+    catalogo_simbolos(doc, numero="0. ")
+    first = False
+    prev_land = False
     for s in SOL:
         if s["land"]:
             landscape(doc)
@@ -327,8 +391,8 @@ def solucionario():
                 figure(doc, s["phase"], 8.0)
         doc.add_heading("Análisis", 3)
         bullets(doc, s["analisis"])
-        doc.add_heading("Componentes", 3)
-        table(doc, [["Ref.", "Componente"]] + s["comp"], [4.5, 12.5] if not s["land"] else [6, 18])
+        doc.add_heading("Símbolos que necesitas", 3)
+        simbolos_ejercicio(doc, s["simb"], s["land"])
         doc.add_heading("Conexiones (para armar en FluidSim)", 3)
         table(doc, [["Desde", "Hacia"]] + s["con"], [7, 10] if not s["land"] else [10, 14])
         doc.add_heading("Errores típicos y variantes", 3)

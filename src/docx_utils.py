@@ -233,3 +233,49 @@ def portrait(doc):
     sec.left_margin = sec.right_margin = Cm(2.0)
     sec.top_margin, sec.bottom_margin = Cm(2.0), Cm(1.8)
     return sec
+
+
+def image_table(doc, header, rows, widths_cm, img_w_cm=3.0, size=9):
+    """Tabla cuya primera columna es una figura (nombre en figuras/) y el resto texto.
+    Cada celda de texto puede ser str o lista de (texto, {bold, color})."""
+    t = doc.add_table(rows=len(rows) + 1, cols=len(header))
+    t.style = "Table Grid"
+    t.alignment = WD_TABLE_ALIGNMENT.CENTER
+    t.autofit = False
+    for j, w in enumerate(widths_cm):
+        t.columns[j].width = Cm(w)
+    for j, h in enumerate(header):
+        c = t.cell(0, j)
+        c.width = Cm(widths_cm[j])
+        r = c.paragraphs[0].add_run(h)
+        r.bold = True
+        r.font.size = Pt(size)
+        r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+        shade(c, "042254")
+    for i, row in enumerate(rows, 1):
+        for j, val in enumerate(row):
+            c = t.cell(i, j)
+            c.width = Cm(widths_cm[j])
+            p = c.paragraphs[0]
+            p.paragraph_format.space_after = Pt(1)
+            if j == 0:
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                path = os.path.join(FIG, val + ".png")
+                from PIL import Image
+                native_cm = Image.open(path).size[0] / 220 * 2.54  # figuras a 220 dpi
+                p.add_run().add_picture(path, width=Cm(min(img_w_cm, native_cm * 0.62)))
+                continue
+            runs = val if isinstance(val, list) else [(val, {})]
+            for txt, o in runs:
+                r = p.add_run(txt)
+                r.font.size = Pt(size)
+                r.bold = o.get("bold", False)
+                if "color" in o:
+                    r.font.color.rgb = o["color"]
+    # que no se parta una fila entre páginas
+    for row in t.rows:
+        trPr = row._tr.get_or_add_trPr()
+        e = OxmlElement("w:cantSplit")
+        trPr.append(e)
+    doc.add_paragraph().paragraph_format.space_after = Pt(2)
+    return t
