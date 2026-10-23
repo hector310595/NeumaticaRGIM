@@ -39,6 +39,8 @@ def simbolos():
         ("sym_52_pilot_resorte", "5/2", "pilot", "spring", 1),
         ("sym_52_biestable", "5/2", "pilot", "pilot", 1),
         ("sym_42_biestable", "4/2", "pilot", "pilot", 1),
+        ("sym_32_pedal", "3/2", "pedal", "spring", 1),
+        ("sym_32_rodillo_accionado", "3/2", "roller", "spring", 0),
     ]
     for name, kind, l, r, pos in specs:
         d = Diagram(4.4, 2.6, -1.1, -0.95)
@@ -69,6 +71,30 @@ def simbolos():
     d.seg((0, 0.3), (0, 0))
     d.exhaust((0, 0))
     d.save(out("sym_escape"))
+
+    # tipos de línea
+    d = Diagram(9.0, 5.0, -0.2, -0.3)
+    rows = [("Línea de trabajo (potencia)", dict()), ("Línea de pilotaje / señal", dict(pilot=True)),
+            ("Línea de grupo (cascada)", dict(color=GROUP[0], lw=2.2))]
+    for k, (lab, kw) in enumerate(rows):
+        y = 4.2 - k * 1.0
+        d.line([(0.2, y), (3.2, y)], **kw)
+        d.text((3.6, y), lab, fs=10, ha="left")
+    y = 1.2
+    d.line([(0.2, y), (3.2, y)])
+    d.line([(1.7, y), (1.7, y + 0.5)])
+    d.dot((1.7, y))
+    d.text((3.6, y), "Unión (con punto)", fs=10, ha="left")
+    y = 0.2
+    d.line([(0.2, y), (3.2, y)])
+    d.line([(1.7, y - 0.3), (1.7, y + 0.4)])
+    d.text((3.6, y), "Cruce sin unión (sin punto)", fs=10, ha="left")
+    d.save(out("sym_lineas"))
+
+    # marcas de final de carrera sobre el cilindro
+    d = Diagram(8.4, 3.4, -0.9, -0.6)
+    d.cylinder(0.3, 0.2, "A", L=3.4)
+    d.save(out("sym_marcas"))
 
     # accionamientos
     for k in ["button", "lever", "pedal", "roller", "roller1", "spring", "pilot"]:
