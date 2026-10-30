@@ -13,6 +13,7 @@ Se conservó solo lo necesario para resolver las prácticas dirigidas 10 y 11.
 | `sesion2_practica/RGIM_S2_Practica_Dirigida_FluidSim.pptx` | Docente (proyectar) | Guía paso a paso de la práctica; **las soluciones son diapositivas ocultas** |
 | `sesion2_practica/RGIM_Guia_Practica_Dirigida_Alumno.docx` | Alumnos | Repaso con catálogo de símbolos, FluidSim, calentamiento, enunciados con preguntas guía y lista de verificación |
 | `docente/RGIM_Solucionario_Docente.docx` | Docente | Catálogo de símbolos (nombre, designación, cómo reconocerlo, función) y las 5 soluciones: esquema, espacio-fase, análisis, símbolos que necesita cada una (cantidad y referencias) y conexiones |
+| `docente/RGIM_Guia_FluidSim_Paso_a_Paso.docx` | Docente | Cómo armar y simular cada solución en FluidSIM: configuración de válvulas, marcas, conexiones en orden, prueba y problemas frecuentes |
 | `docente/RGIM_Plan_de_Sesiones.docx` | Docente | Criterio de selección del contenido, cronograma minuto a minuto y preparación |
 | `figuras/` | — | Todos los esquemas y diagramas en PNG y SVG (reutilizables) |
 | `fluidsim/` | Docente | Cómo armar los circuitos en FluidSim (ver nota sobre archivos `.ct`) |

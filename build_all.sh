@@ -8,3 +8,4 @@ python3 src/diagramas.py
 python3 src/build_teoria.py
 python3 src/build_practica.py
 python3 src/build_docs.py
+python3 src/build_fluidsim.py
