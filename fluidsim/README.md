@@ -14,6 +14,11 @@ circuito trae lo necesario para armarlo en pocos minutos:
 
 El solucionario está en `docente/RGIM_Solucionario_Docente.docx`.
 
+**Guía clic a clic:** `docente/RGIM_Guia_FluidSim_Paso_a_Paso.docx` explica cómo configurar
+cada válvula (doble clic), poner las marcas de final de carrera (regla de distancia en
+FluidSIM 3.x/4.x o etiquetas del cilindro en 5/6), conectar en el orden correcto, simular
+y qué revisar si algo no funciona, para los 5 ejercicios.
+
 ## Cómo armar un circuito a partir de la tabla de conexiones
 
 1. Coloca los componentes de la tabla «Componentes». Usa la válvula configurable y elige el
